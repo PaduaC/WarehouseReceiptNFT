@@ -8,6 +8,13 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 contract WarehouseReceipt is ERC721URIStorage {
     using SafeMath for uint256;
 
+    enum LoanState {
+        START,
+        END
+    }
+
+    LoanState public state;
+
     struct Receipt {
         uint256 warehouseId;
     }
@@ -54,6 +61,7 @@ contract WarehouseReceipt is ERC721URIStorage {
         string memory details
     ) external {
         _createLoan(id, duration, amount, details);
+        state = LoanState.START;
     }
 
     function getLoan(uint256 id)
@@ -302,6 +310,11 @@ contract WarehouseReceipt is ERC721URIStorage {
             loanToId[_tokenId] == _claimant,
             "Can only be called by claimant of loan"
         );
+        _;
+    }
+
+    modifier activeLoan() {
+        require(state == LoanState.START, "Loan must be active");
         _;
     }
 }
